@@ -144,7 +144,7 @@ int main()
 {
 	if (!glfwInit())
 		return 1;
-	GLFWwindow* glWindow = glfwCreateWindow(640, 720, "Donut", NULL, NULL);
+	GLFWwindow* glWindow = glfwCreateWindow(640, 640, "Donut", NULL, NULL);
 	glfwMakeContextCurrent(glWindow);
 	glfwSwapInterval(1);
 
