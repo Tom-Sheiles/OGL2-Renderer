@@ -24,12 +24,12 @@ int main()
 		glBegin(GL_QUADS);
 
 		// red
-		glColor3f(0.97, 0.567, 0.438);
+		glColor3f(1.0, 0.702, 0.702);
 		glVertex2f(-1.0, -1.0);
 		glVertex2f(1.0, -1.0);
 
 		//blue color
-		glColor3f(0.533, 0.82, 0.792);
+		glColor3f(0.75, 0.937, 1.0);
 		glVertex2f(1.0, 1.0);
 		glVertex2f(-1.0, 1.0);
 
@@ -38,12 +38,13 @@ int main()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBegin(GL_QUADS);
 
-		glColor3f(1.0, 0.06, 0.941);
-		glVertex2f(-0.5, -0.5);
-		glVertex2f(0.5, -0.5);
+		glColor3f(0.0, 0.0, 0.5);
 
-		glVertex2f(0.5, 0.5);
-		glVertex2f(-0.5, 0.5);
+		glVertex3f(-0.5, -0.5, 1.0);
+		glVertex3f(0.5, -0.5, 0.0);
+
+		glVertex3f(0.5, 0.5, 0.0);
+		glVertex3f(-0.5, 0.5, 0.0);
 
 		glEnd();
 
