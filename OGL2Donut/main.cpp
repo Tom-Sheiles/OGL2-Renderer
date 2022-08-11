@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <vector>
 #include <string>
+#include <sstream>
+#include <iostream>
 #include <GLFW/glfw3.h>
 
 // fopen() unsafe
@@ -13,10 +15,92 @@ struct Vert
 	float x, y, z;
 };
 
+struct Face {
+	Face(int a, int b, int c) : a(a), b(b), c(c) {}
+	int a, b, c;
+};
+
 struct Obj {
 	std::vector<Vert> verts;
-	std::vector<int> tris;
+	std::vector<Face> tris;
 };
+
+
+Vert parseVerts(std::string s)
+{
+	std::vector<float> v;
+
+	std::istringstream iss(s);
+	std::copy(std::istream_iterator<float>(iss),
+		std::istream_iterator<float>(),
+		std::back_inserter(v));
+
+	return Vert(v[0],v[1],v[2]);
+}
+
+Face parseFace(std::string s)
+{
+	std::vector<int> v;
+
+	std::istringstream iss(s);
+	std::copy(std::istream_iterator<int>(iss),
+		std::istream_iterator<int>(),
+		std::back_inserter(v));
+
+	return Face(v[0], v[1], v[2]);
+}
+
+void RotateX3D(Obj* obj, float theta)
+{
+	float sintheta = sin(theta);
+	float costheta = cos(theta);
+
+	for (int i = 0; i < obj->verts.size(); i++)
+	{
+		float y = obj->verts[i].y;
+		float z = obj->verts[i].z;
+
+		obj->verts[i].y = y * costheta - z * sintheta;
+		obj->verts[i].z = z * costheta + y * sintheta;
+	}
+}
+
+void RotateY3D(Obj* obj, float theta)
+{
+	float sintheta = sin(theta);
+	float costheta = cos(theta);
+
+	for (int i = 0; i < obj->verts.size(); i++)
+	{
+		float x = obj->verts[i].x;
+		float z = obj->verts[i].z;
+
+		obj->verts[i].x = x * costheta + z * sintheta;
+		obj->verts[i].z = z * costheta - x * sintheta;
+	}
+}
+
+void RotateZ3D(Obj* obj, float theta)
+{
+	float sintheta = sin(theta);
+	float costheta = cos(theta);
+
+	for (int i = 0; i < obj->verts.size(); i++)
+	{
+		float x = obj->verts[i].x;
+		float y = obj->verts[i].y;
+
+		obj->verts[i].x = x * costheta - y * sintheta;
+		obj->verts[i].y = y * costheta + x * sintheta;
+	}
+}
+
+void Rotate(Obj* obj, float theta)
+{
+	RotateX3D(obj, theta);
+	RotateY3D(obj, theta);
+	RotateZ3D(obj, theta);
+}
 
 void DrawBackground()
 {
@@ -42,14 +126,16 @@ void DrawObject(Obj *obj)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glBegin(GL_TRIANGLES);
 
-	glColor3f(0.0, 0.0, 0.5);
+	glColor3f(1,1,1);
 
-	glVertex3f(-0.5, -0.5, 0.0);
-	glVertex3f(0.5, -0.5, 0.0);
+	for (int i = 0; i < obj->tris.size(); i++)
+	{
+		Face face = obj->tris[i];
 
-	glVertex3f(0.5, 0.5, 0.0);
-	glVertex3f(-0.5, 0.5, 0.0);
-
+		glVertex3f(obj->verts[face.a - 1].x, obj->verts[face.a - 1].y, obj->verts[face.a - 1].z);
+		glVertex3f(obj->verts[face.b - 1].x, obj->verts[face.b - 1].y, obj->verts[face.b - 1].z);
+		glVertex3f(obj->verts[face.c - 1].x, obj->verts[face.c - 1].y, obj->verts[face.c - 1].z);
+	}
 
 	glEnd();
 }
@@ -63,7 +149,7 @@ int main()
 	glfwSwapInterval(1);
 
 	char line[256];
-	FILE* fObj = fopen("./res/cube.3d", "r");
+	FILE* fObj = fopen("./res/donut.3d", "r");
 	if (!fObj)
 		return 1;
 
@@ -74,15 +160,16 @@ int main()
 		if(line[0] == 'v')
 		{
 			std::string s(line);
-			std::string temp = s.substr(1, s.find(" "));
-			int a = 1;
+			obj.verts.push_back(parseVerts(s.substr(2)));
 		}
 		else if (line[0] == 'f')
 		{
-
+			std::string s(line);
+			obj.tris.push_back(parseFace(s.substr(2)));
 		}
 	}
 	fclose(fObj);
+	
 
 	while (!glfwWindowShouldClose(glWindow))
 	{
@@ -97,6 +184,7 @@ int main()
 		DrawBackground();
 		DrawObject(&obj);
 
+		Rotate(&obj, 0.01);
 
 		glfwMakeContextCurrent(glWindow);
 		glfwSwapBuffers(glWindow);
